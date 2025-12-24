@@ -1,10 +1,13 @@
+import 'dotenv/config';
 import express from "express";
 import serverless from "serverless-http";
 import cors from "cors";
 import bodyParser from "body-parser";
 import session from "express-session";
+
 import routes from "../routes/index.js";
 import "../config/database.js"; // ensure DB connection
+import passport from "../passport.js";
 
 const app = express();
 
@@ -18,9 +21,9 @@ app.use(
   })
 );
 
-app.use(bodyParser.json());
 
-// Session middleware (required for admin login)
+app.use(bodyParser.json());
+// Session middleware (required for login sessions)
 app.use(
   session({
     secret: "your-secret-key", // TODO: use a strong secret in production!
@@ -29,6 +32,8 @@ app.use(
     cookie: { secure: false }, // set to true if using HTTPS
   })
 );
+app.use(passport.initialize());
+app.use(passport.session());
 
 /* =========================
    Routes
@@ -44,7 +49,7 @@ export const handler = serverless(app);
    Local development server
 ========================= */
 if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 4000;
+  const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Backend listening on http://localhost:${PORT}`);
   });

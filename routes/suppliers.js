@@ -1,5 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('../passport');
+// Google OAuth: /api/suppliers/auth/google
+router.get('/auth/google',
+  passport.authenticate('supplier-google', { scope: ['profile', 'email'] })
+);
+
+// Google OAuth callback
+router.get('/auth/google/callback',
+  passport.authenticate('supplier-google', { failureRedirect: '/supplier/login', session: true }),
+  (req, res) => {
+    console.log('Google OAuth callback hit, user:', req.user);
+    // If supplier is approved, redirect to dashboard; else show pending message
+    if (req.user && req.user.status === 'approved') {
+      return res.redirect('http://localhost:5173/supplier/dashboard');
+    } else {
+      return res.redirect('http://localhost:5173/supplier/login?pending=1');
+    }
+  }
+);
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');

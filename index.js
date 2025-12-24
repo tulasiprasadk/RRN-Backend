@@ -26,7 +26,7 @@ app.use("/api", routes);
 /* =========================
    Start server (local)
 ========================= */
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);
 });

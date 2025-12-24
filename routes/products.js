@@ -40,7 +40,14 @@ router.get("/", async (req, res) => {
       order: [["id", "DESC"]],
     });
 
-    res.json(products);
+    // Add basePrice property for frontend compatibility
+    const productsWithBasePrice = products.map((p) => {
+      const obj = p.toJSON();
+      obj.basePrice = obj.price;
+      return obj;
+    });
+
+    res.json(productsWithBasePrice);
   } catch (err) {
     console.error("Error fetching products:", err);
     res.status(500).json({ error: "Failed to fetch products" });
