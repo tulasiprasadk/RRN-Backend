@@ -125,10 +125,21 @@ router.get("/me", (req, res) => {
     return res.status(401).json({ loggedIn: false });
   }
 
-  res.json({
-    loggedIn: true,
-    customerId: req.session.customerId,
-  });
+  // Return full customer object (excluding sensitive fields) as 'user' for frontend consistency
+  const { Customer } = require("../../models");
+  Customer.findByPk(req.session.customerId, {
+    attributes: { exclude: ["otpCode", "otpExpiresAt", "password"] }
+  })
+    .then(customer => {
+      if (!customer) {
+        return res.status(401).json({ loggedIn: false });
+      }
+      res.json({
+        loggedIn: true,
+        user: customer
+      });
+    })
+    .catch(() => res.status(500).json({ loggedIn: false }));
 });
 
 /* =====================================================

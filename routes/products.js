@@ -13,8 +13,9 @@ router.get("/", async (req, res) => {
     const { categoryId, q } = req.query;
 
     const where = {
-      status: "approved",
-    };
+  status: { [Op.in]: ["approved", "active"] },
+};
+
 
     if (categoryId) {
       where.CategoryId = Number(categoryId);
@@ -141,6 +142,52 @@ router.post("/bulk", async (req, res) => {
   } catch (err) {
     console.error("Bulk upload error:", err);
     res.status(500).json({ error: "Bulk upload failed" });
+  }
+});
+
+
+/* =====================================================
+   GET /api/products/:id
+   - Public: fetch single approved product by ID
+===================================================== */
+router.get("/", async (req, res) => {
+  try {
+    const categoryId = req.query.categoryId || req.query.category;
+    const q = req.query.q;
+
+    const where = {
+      status: { [Op.in]: ["approved", "active"] },
+    };
+
+    if (categoryId) {
+      where.CategoryId = Number(categoryId);
+    }
+
+    if (q) {
+      where[Op.or] = [
+        { title: { [Op.iLike]: `%${q}%` } },
+        { variety: { [Op.iLike]: `%${q}%` } },
+        { subVariety: { [Op.iLike]: `%${q}%` } },
+        { description: { [Op.iLike]: `%${q}%` } },
+      ];
+    }
+
+    const products = await Product.findAll({
+      where,
+      include: [{ model: Category, attributes: ["id", "name"] }],
+      order: [["id", "DESC"]],
+    });
+
+    const productsWithBasePrice = products.map((p) => {
+      const obj = p.toJSON();
+      obj.basePrice = obj.price;
+      return obj;
+    });
+
+    res.json(productsWithBasePrice);
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 

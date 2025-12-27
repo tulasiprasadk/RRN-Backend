@@ -12,9 +12,15 @@ const AnalyticsVisit = require('./AnalyticsVisit')(sequelize, DataTypes);
 const StockHistory = require('./StockHistory')(sequelize, DataTypes);
 const Shop = require('./Shop')(sequelize, DataTypes);
 const Customer = require('./Customer')(sequelize, DataTypes);
+const CartItem = require('./CartItem')(sequelize, DataTypes);
 const Address = require('./Address')(sequelize, DataTypes);   // ✅ ADDED
 const Notification = require("./Notification")(sequelize, DataTypes);
 const Variety = require('./Variety')(sequelize, DataTypes);
+// CartItem associations
+Customer.hasMany(CartItem, { foreignKey: 'customerId', onDelete: 'CASCADE' });
+CartItem.belongsTo(Customer, { foreignKey: 'customerId' });
+Product.hasMany(CartItem, { foreignKey: 'productId', onDelete: 'CASCADE' });
+CartItem.belongsTo(Product, { foreignKey: 'productId' });
 
 // Junction table for many-to-many Product-Supplier relationship
 const ProductSupplier = sequelize.define('ProductSupplier', {
@@ -79,7 +85,7 @@ Address.belongsTo(Customer);          // ✅ ADDED
 =========================== */
 module.exports = {
   sequelize,
-    Admin,
+  Admin,
   Ad,
   Supplier,
   Category,
@@ -89,6 +95,7 @@ module.exports = {
   StockHistory,
   Shop,
   Customer,
+  CartItem,
   Address,                             // ✅ ADDED
   Notification,
   Variety,
