@@ -1,7 +1,8 @@
 // backend/routes/partner.js
-const express = require("express");
+
+import express from "express";
+import { notifyAdmin } from "../services/adminNotify.js";
 const router = express.Router();
-const { notifyAdmin } = require("../services/adminNotify");
 
 // POST /api/partner-inquiry
 router.post("/partner-inquiry", async (req, res) => {
@@ -41,4 +42,4 @@ router.post("/partner-inquiry", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

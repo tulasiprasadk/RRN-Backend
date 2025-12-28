@@ -3,10 +3,11 @@
  * Supplier Authentication (Email OTP)
  */
 
-const express = require("express");
+
+import express from "express";
+import { Supplier } from "../../models/index.js";
+import { sendOTP } from "../../services/emailService.js";
 const router = express.Router();
-const { Supplier } = require("../../models");
-const { sendOTP } = require("../../services/emailService");
 
 const otpStore = {}; // Format: { email: { otp: "123456", expiresAt: timestamp } }
 
@@ -167,4 +168,4 @@ router.post("/logout", (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

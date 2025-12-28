@@ -1,6 +1,7 @@
-const express = require('express');
+
+import express from 'express';
+import { StockHistory } from '../models/index.js';
 const router = express.Router();
-const { StockHistory } = require('../models');
 
 // GET stock history
 router.get('/', async (req, res) => {
@@ -24,4 +25,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

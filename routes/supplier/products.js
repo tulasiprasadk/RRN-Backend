@@ -1,6 +1,7 @@
-const express = require('express');
+
+import express from 'express';
+import { Product, ProductSupplier, Supplier } from '../../models/index.js';
 const router = express.Router();
-const { Product, ProductSupplier, Supplier } = require('../../models');
 
 // Middleware to check supplier authentication using session
 function requireSupplier(req, res, next) {
@@ -56,4 +57,4 @@ router.put('/:id', requireSupplier, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

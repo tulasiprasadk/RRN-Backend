@@ -1,6 +1,7 @@
-const express = require("express");
+
+import express from "express";
+import { Order, Product, Address } from "../../models/index.js";
 const router = express.Router();
-const { Order, Product, Address } = require("../../models");
 
 /* Supplier Login Middleware */
 function requireSupplier(req, res, next) {
@@ -45,4 +46,4 @@ router.put("/:id/deliver", requireSupplier, async (req, res) => {
   res.json({ success: true, message: "Order marked as delivered" });
 });
 
-module.exports = router;
+export default router;

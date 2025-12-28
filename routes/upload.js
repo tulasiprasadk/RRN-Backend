@@ -1,20 +1,17 @@
-const express = require("express");
-const multer = require("multer");
-const fs = require("fs");
-const path = require("path");
 
+import express from "express";
+import multer from "multer";
+import fs from "fs";
+import path from "path";
 const router = express.Router();
-
 // Ensure directory exists
-const uploadDir = path.join(__dirname, "..", "uploads", "payment");
+const uploadDir = path.join(path.resolve(), "uploads", "payment");
 fs.mkdirSync(uploadDir, { recursive: true });
-
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => 
     cb(null, Date.now() + "-" + file.originalname),
 });
-
 const upload = multer({ storage });
 
 /* ============================================================
@@ -31,4 +28,4 @@ router.post("/payment", upload.single("file"), (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

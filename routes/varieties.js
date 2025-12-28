@@ -1,7 +1,8 @@
 // backend/routes/varieties.js
-const express = require('express');
+
+import express from 'express';
+import { Variety, Category } from '../models/index.js';
 const router = express.Router();
-const { Variety, Category } = require('../models');
 
 // Get all varieties (with optional category filter)
 router.get('/', async (req, res) => {
@@ -136,4 +137,4 @@ router.post('/bulk', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

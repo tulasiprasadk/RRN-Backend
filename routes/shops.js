@@ -1,6 +1,7 @@
-const express = require('express');
+
+import express from 'express';
+import { Shop } from '../models/index.js';
 const router = express.Router();
-const { Shop } = require('../models');
 
 // GET all shops
 router.get('/', async (req, res) => {
@@ -22,4 +23,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,15 +1,10 @@
-const express = require("express");
-const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 
-const { 
-  Order, 
-  Product, 
-  Supplier, 
-  Address,
-  Notification 
-} = require("../models");
+import express from "express";
+import multer from "multer";
+import path from "path";
+import fs from "fs";
+import { Order, Product, Supplier, Address, Notification } from "../models/index.js";
+const router = express.Router();
 
 // Configure multer for payment screenshots
 const storage = multer.diskStorage({
@@ -429,4 +424,4 @@ router.get("/:id/invoice", requireLogin, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

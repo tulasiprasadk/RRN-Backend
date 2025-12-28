@@ -1,6 +1,7 @@
-const express = require('express');
+
+import express from 'express';
+import { AnalyticsVisit } from '../models/index.js';
 const router = express.Router();
-const { AnalyticsVisit } = require('../models');
 
 // CREATE visit log
 router.post('/', async (req, res) => {
@@ -24,4 +25,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
