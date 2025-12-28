@@ -17,7 +17,6 @@ function requireLogin(req, res, next) {
 ====================================== */
 router.get("/", requireLogin, async (req, res) => {
   try {
-    const { Order } = require("../../models");
     const customerId = req.session.customerId;
 
     // Get unique suppliers from customer's orders
