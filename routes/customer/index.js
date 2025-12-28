@@ -1,13 +1,20 @@
-const express = require('express');
+import express from "express";
+import auth from "./auth/index.js";
+import address from "./address/index.js";
+import dashboardStats from "./dashboard-stats/index.js";
+import payment from "./payment/index.js";
+import profile from "./profile/index.js";
+import savedSuppliers from "./saved-suppliers/index.js";
+import cart from "./cart/index.js";
+
 const router = express.Router();
 
-// Auth, dashboard, and other customer routes
-router.use('/auth', require('./auth'));
-router.use('/address', require('./address'));
-router.use('/dashboard-stats', require('./dashboard-stats'));
-router.use('/payment', require('./payment'));
-router.use('/profile', require('./profile'));
-router.use('/saved-suppliers', require('./saved-suppliers'));
-router.use('/cart', require('./cart'));
+router.use('/auth', auth);
+router.use('/address', address);
+router.use('/dashboard-stats', dashboardStats);
+router.use('/payment', payment);
+router.use('/profile', profile);
+router.use('/saved-suppliers', savedSuppliers);
+router.use('/cart', cart);
 
-module.exports = router;
+export default router;
