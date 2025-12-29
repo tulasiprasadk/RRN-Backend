@@ -1,6 +1,15 @@
-const express = require('express');
+import express from 'express';
+import passport from '../passport.js';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+import bcrypt from 'bcrypt';
+import { Supplier, Product, Order } from '../models/index.js';
+import { sendNotificationToAdmin } from '../utils/notify.js';
+import adminNotify from '../services/adminNotify.js';
+import { sendOTP as sendOTPSMS } from '../services/smsService.js';
+
 const router = express.Router();
-const passport = require('../passport');
 // Google OAuth: /api/suppliers/auth/google
 router.get('/auth/google',
   passport.authenticate('supplier-google', { scope: ['profile', 'email'] })
@@ -19,14 +28,7 @@ router.get('/auth/google/callback',
     }
   }
 );
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const bcrypt = require('bcrypt');
-const { Supplier, Product, Order } = require('../models');
-const { sendNotificationToAdmin } = require('../utils/notify');
-const adminNotify = require('../services/adminNotify');
-const { sendOTP: sendOTPSMS } = require('../services/smsService');
+
 
 // Configure multer for KYC document uploads
 const storage = multer.diskStorage({
@@ -251,7 +253,7 @@ router.post('/register', upload.fields([
       businessLicense: req.files?.businessLicense?.[0]?.path,
       gstCertificate: req.files?.gstCertificate?.[0]?.path,
       idProof: req.files?.idProof?.[0]?.path,
-      bankDetails: bankDetails ? JSON.parse(bankDetails) : null,
+      bankDetails: parsedBankDetails,
       status: 'pending',
       acceptedTnC
     });
@@ -451,4 +453,4 @@ router.get('/pending/all', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

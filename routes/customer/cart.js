@@ -1,12 +1,6 @@
-<<<<<<< HEAD
-const express = require("express");
-const router = express.Router();
-const { CartItem, Product, Customer } = require("../../models");
-=======
 import express from "express";
 import { CartItem, Product, Customer, Category } from "../../models/index.js";
 const router = express.Router();
->>>>>>> 6ad866bc3b02abfaafe4c4d9ece89858474b19cd
 
 // Middleware to require login
 function requireLogin(req, res, next) {
@@ -26,11 +20,7 @@ router.get("/", requireLogin, async (req, res) => {
           model: Product,
           include: [
             {
-<<<<<<< HEAD
-              model: require("../../models").Category,
-=======
               model: Category,
->>>>>>> 6ad866bc3b02abfaafe4c4d9ece89858474b19cd
               attributes: ["name"]
             }
           ],
@@ -67,7 +57,7 @@ router.post("/add", requireLogin, async (req, res) => {
     // Lookup product and hydrate category
     const product = await Product.findOne({
       where: { id: productId, status: "approved" },
-      include: [{ model: require("../../models").Category }],
+      include: [{ model: Category }],
     });
     if (!product) {
       return res.status(404).json({ success: false, error: "Product not found" });
@@ -90,7 +80,7 @@ router.post("/add", requireLogin, async (req, res) => {
     // Hydrate cart for response
     const items = await CartItem.findAll({
       where: { customerId: req.session.customerId },
-      include: [{ model: Product, include: [{ model: require("../../models").Category }] }],
+      include: [{ model: Product, include: [{ model: Category }] }],
     });
     const hydrated = items.map(item => {
       const product = item.Product;
@@ -132,8 +122,4 @@ router.post("/clear", requireLogin, async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-module.exports = router;
-=======
 export default router;
->>>>>>> 6ad866bc3b02abfaafe4c4d9ece89858474b19cd

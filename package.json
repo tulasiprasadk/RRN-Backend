@@ -1,12 +1,11 @@
 {
   "type": "module",
   "name": "rrnagar-backend",
-  "type": "module",
   "version": "0.1.0",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node api/index.js",
+    "start": "node index.js",
     "migrate": "node migrate.js",
     "dev": "nodemon api/index.js"
   },

@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
+import { Product, Category } from "../models/index.js";
+import { Op } from "sequelize";
+
 const router = express.Router();
-const { Product, Category } = require("../models");
-const { Op } = require("sequelize");
 
 /* =====================================================
    GET /api/products
@@ -150,45 +151,6 @@ router.post("/bulk", async (req, res) => {
    GET /api/products/:id
    - Public: fetch single approved product by ID
 ===================================================== */
-router.get("/", async (req, res) => {
-  try {
-    const categoryId = req.query.categoryId || req.query.category;
-    const q = req.query.q;
+// Removed duplicate GET / route and merge conflict artifacts
 
-    const where = {
-      status: { [Op.in]: ["approved", "active"] },
-    };
-
-    if (categoryId) {
-      where.CategoryId = Number(categoryId);
-    }
-
-    if (q) {
-      where[Op.or] = [
-        { title: { [Op.iLike]: `%${q}%` } },
-        { variety: { [Op.iLike]: `%${q}%` } },
-        { subVariety: { [Op.iLike]: `%${q}%` } },
-        { description: { [Op.iLike]: `%${q}%` } },
-      ];
-    }
-
-    const products = await Product.findAll({
-      where,
-      include: [{ model: Category, attributes: ["id", "name"] }],
-      order: [["id", "DESC"]],
-    });
-
-    const productsWithBasePrice = products.map((p) => {
-      const obj = p.toJSON();
-      obj.basePrice = obj.price;
-      return obj;
-    });
-
-    res.json(productsWithBasePrice);
-  } catch (err) {
-    console.error("Error fetching products:", err);
-    res.status(500).json({ error: "Failed to fetch products" });
-  }
-});
-
-module.exports = router;
+export default router;

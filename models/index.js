@@ -15,23 +15,7 @@ import getAddress from './Address.js';
 import getNotification from './Notification.js';
 import getVariety from './Variety.js';
 
-// Load Models
-<<<<<<< HEAD
-const Admin = require('./Admin')(sequelize, DataTypes);
-const Ad = require('./Ad')(sequelize, DataTypes);
-const Supplier = require('./Supplier')(sequelize, DataTypes);
-const Category = require('./Category')(sequelize, DataTypes);
-const Product = require('./Product')(sequelize, DataTypes);
-const Order = require('./Order')(sequelize, DataTypes);
-const AnalyticsVisit = require('./AnalyticsVisit')(sequelize, DataTypes);
-const StockHistory = require('./StockHistory')(sequelize, DataTypes);
-const Shop = require('./Shop')(sequelize, DataTypes);
-const Customer = require('./Customer')(sequelize, DataTypes);
-const CartItem = require('./CartItem')(sequelize, DataTypes);
-const Address = require('./Address')(sequelize, DataTypes);   // ✅ ADDED
-const Notification = require("./Notification")(sequelize, DataTypes);
-const Variety = require('./Variety')(sequelize, DataTypes);
-=======
+// Load Models (only once)
 const Admin = getAdmin(sequelize, DataTypes);
 const Ad = getAd(sequelize, DataTypes);
 const Supplier = getSupplier(sequelize, DataTypes);
@@ -46,7 +30,7 @@ const CartItem = getCartItem(sequelize, DataTypes);
 const Address = getAddress(sequelize, DataTypes);
 const Notification = getNotification(sequelize, DataTypes);
 const Variety = getVariety(sequelize, DataTypes);
->>>>>>> 6ad866bc3b02abfaafe4c4d9ece89858474b19cd
+
 // CartItem associations
 Customer.hasMany(CartItem, { foreignKey: 'customerId', onDelete: 'CASCADE' });
 CartItem.belongsTo(Customer, { foreignKey: 'customerId' });
@@ -127,11 +111,7 @@ export {
   Shop,
   Customer,
   CartItem,
-<<<<<<< HEAD
-  Address,                             // ✅ ADDED
-=======
   Address,
->>>>>>> 6ad866bc3b02abfaafe4c4d9ece89858474b19cd
   Notification,
   Variety,
   ProductSupplier

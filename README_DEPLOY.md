@@ -1,6 +1,6 @@
 
 RRnagar Backend — Render deployment ready
-========================================
+
 
 What I changed:
 - Added `pg` and `pg-hstore` to package.json so Sequelize can use PostgreSQL.

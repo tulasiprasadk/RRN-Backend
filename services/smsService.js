@@ -43,24 +43,24 @@ export async function sendOTP(phone, otp) {
         console.log('=================================\n');
         return true;
     }
+
   } catch (error) {
     console.error('SMS Send Error:', error.message);
     return false;
   }
 }
 
-// ...existing code for sendViaTwilio, sendViaMSG91, sendViaFast2SMS...
-  }
-
+/**
+ * Send SMS via Twilio
+ */
+async function sendViaTwilio(phone, message) {
   const { default: twilioPkg } = await import('twilio');
   const twilio = twilioPkg(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-  
   await twilio.messages.create({
     body: message,
     from: TWILIO_PHONE_NUMBER,
     to: phone
   });
-
   console.log(`SMS sent via Twilio to ${phone}`);
   return true;
 }
@@ -142,4 +142,4 @@ async function sendSMS(phone, message) {
   }
 }
 
-export { sendOTP, sendSMS };
+export { sendSMS };

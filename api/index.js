@@ -1,26 +1,25 @@
 import "dotenv/config";
-import app from "../src/app.js";
+import "dotenv/config";
+import express from "express";
+import serverless from "serverless-http";
+import cors from "cors";
+import bodyParser from "body-parser";
+import session from "express-session";
 
-<<<<<<< HEAD
 import routes from "../routes/index.js";
 import "../config/database.js"; // ensure DB connection
 import passport from "../passport.js";
 
 const app = express();
 
-/* =========================
-   Middleware
-========================= */
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend
+    origin: "http://localhost:5173", // frontend (update for prod if needed)
     credentials: true,
   })
 );
 
-
 app.use(bodyParser.json());
-// Session middleware (required for login sessions)
 app.use(
   session({
     secret: "your-secret-key", // TODO: use a strong secret in production!
@@ -32,27 +31,13 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* =========================
-   Routes
-========================= */
 app.use("/api", routes);
 
-/* =========================
-   Serverless export
-========================= */
-export const handler = serverless(app);
+// Only needed for serverless platforms like Vercel/AWS Lambda
+// export const handler = serverless(app);
 
-/* =========================
-   Local development server
-========================= */
-
+// Always start the server for Cloud Run
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);
 });
-=======
-export { app };
-export default function handler(req, res) {
-	return app(req, res);
-}
->>>>>>> 6ad866bc3b02abfaafe4c4d9ece89858474b19cd

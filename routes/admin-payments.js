@@ -25,8 +25,8 @@ router.get("/", async (req, res) => {
 });
 
 /* ============================================================
-   APPROVE PAYMENT
-   POST /api/admin/payments/:id/approve
+  APPROVE PAYMENT
+  POST /api/admin/payments/:id/approve
 ============================================================ */
 router.post("/:id/approve", async (req, res) => {
   try {

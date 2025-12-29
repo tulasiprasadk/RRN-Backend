@@ -6,9 +6,9 @@ import "./config/database.js"; // ensure DB connection
 
 const app = express();
 
-/* =========================
-   Middleware
-========================= */
+
+// Middleware
+
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -18,15 +18,15 @@ app.use(
 
 app.use(bodyParser.json());
 
-/* =========================
-   Routes
-========================= */
+
+// Routes
+
 app.use("/api", routes);
 
 /* =========================
    Start server (local)
 ========================= */
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
   console.log(`Backend listening on http://localhost:${PORT}`);
 });
