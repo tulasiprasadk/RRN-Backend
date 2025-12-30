@@ -3,7 +3,8 @@
 import passport from 'passport';
 import pkg from 'passport-google-oauth20';
 const { Strategy: GoogleStrategy } = pkg;
-import { Supplier, Customer } from './models/index.js';
+import { models } from './config/database.js';
+const { Supplier, Customer } = models;
 
 
 // Support both Supplier and Customer serialization
