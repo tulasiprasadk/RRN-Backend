@@ -9,8 +9,11 @@ const { Supplier, Customer } = models;
 
 // Support both Supplier and Customer serialization
 passport.serializeUser((user, done) => {
-  // Tag user type for deserialization
-  done(null, { id: user.id, type: user instanceof Supplier.constructor ? 'Supplier' : 'Customer' });
+  if (user?.constructor?.name === 'Supplier') {
+    done(null, { id: user.id, type: 'Supplier' });
+  } else {
+    done(null, { id: user.id, type: 'Customer' });
+  }
 });
 
 passport.deserializeUser(async (obj, done) => {
