@@ -1,4 +1,5 @@
-import { Notification } from "../models/index.js";
+import { models } from "../config/database.js";
+const { Notification } = models;
 
 const adminNotify = async (type, title, message) => {
   try {
