@@ -1,6 +1,7 @@
 
 import express from "express";
-import { Order, Product, Address } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Order, Product, Address } = models;
 const router = express.Router();
 
 /* Supplier Login Middleware */

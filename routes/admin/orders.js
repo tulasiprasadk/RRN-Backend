@@ -1,6 +1,7 @@
 
 import express from "express";
-import { Order, Product, Supplier, Address } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Order, Product, Supplier, Address } = models;
 import notifyCustomer from "../../services/notificationService.js";
 const router = express.Router();
 

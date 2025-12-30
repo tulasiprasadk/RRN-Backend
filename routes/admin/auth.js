@@ -5,7 +5,8 @@
 
 
 import express from "express";
-import { Admin } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Admin } = models;
 import { sendOTP } from "../../services/emailService.js";
 const router = express.Router();
 

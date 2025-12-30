@@ -1,5 +1,6 @@
 import express from "express";
-import { CartItem, Product, Customer, Category } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { CartItem, Product, Customer, Category } = models;
 const router = express.Router();
 
 // Middleware to require login

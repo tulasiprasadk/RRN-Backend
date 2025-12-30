@@ -1,5 +1,6 @@
 import express from "express";
-import { Customer } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Customer } = models;
 const router = express.Router();
 
 // GET PROFILE

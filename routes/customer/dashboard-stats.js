@@ -1,5 +1,6 @@
 import express from "express";
-import { Order, Address } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Order, Address } = models;
 const router = express.Router();
 
 function requireLogin(req, res, next) {

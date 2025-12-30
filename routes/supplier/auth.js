@@ -5,7 +5,8 @@
 
 
 import express from "express";
-import { Supplier } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Supplier } = models;
 import { sendOTP } from "../../services/emailService.js";
 const router = express.Router();
 

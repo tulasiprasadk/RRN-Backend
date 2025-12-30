@@ -3,7 +3,8 @@ import multer from "multer";
 import sharp from "sharp";
 import path from "path";
 import fs from "fs";
-import { Order } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Order } = models;
 const router = express.Router();
 
 function requireLogin(req, res, next) {

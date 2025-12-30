@@ -1,5 +1,6 @@
 import express from "express";
-import { Address } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Address } = models;
 const router = express.Router();
 
 /* ======================================

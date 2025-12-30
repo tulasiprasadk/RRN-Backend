@@ -1,6 +1,7 @@
 
 import express from "express";
-import { Notification } from "../../models/index.js";
+import { models } from "../../config/database.js";
+const { Notification } = models;
 const router = express.Router();
 
 /* Get all unread notifications */
