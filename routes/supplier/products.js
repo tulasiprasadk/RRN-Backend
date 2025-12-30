@@ -1,6 +1,7 @@
 
 import express from 'express';
-import { Product, ProductSupplier, Supplier } from '../../models/index.js';
+import { models } from '../../config/database.js';
+const { Product, ProductSupplier, Supplier } = models;
 const router = express.Router();
 
 // Middleware to check supplier authentication using session
