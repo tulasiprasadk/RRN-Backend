@@ -1,5 +1,5 @@
 
-import { Product, Supplier, Category, sequelize } from "../models/index.js";
+import { Product, Supplier, Category, sequelize } from "../config/database.js";
 
 async function seed() {
 

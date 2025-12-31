@@ -1,5 +1,6 @@
 
-import { sequelize, Category } from './models/index.js';
+import { models, sequelize } from './config/database.js';
+const { Category } = models;
 
 const categories = [
   { name: 'Groceries', icon: '🛒' },

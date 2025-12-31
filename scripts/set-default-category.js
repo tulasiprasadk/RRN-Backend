@@ -1,5 +1,6 @@
 
-import { Product } from '../models/index.js';
+import { models } from '../config/database.js';
+const { Product } = models;
 
 (async () => {
   try {

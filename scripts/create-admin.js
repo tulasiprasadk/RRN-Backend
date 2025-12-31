@@ -5,7 +5,8 @@
 
 
 import bcrypt from 'bcrypt';
-import { Admin, sequelize } from '../models/index.js';
+import { models, sequelize } from '../config/database.js';
+const { Admin } = models;
 
 async function createAdmin() {
   try {

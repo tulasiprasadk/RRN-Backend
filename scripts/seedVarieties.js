@@ -1,6 +1,7 @@
 // backend/scripts/seedVarieties.js
 
-import { sequelize, Category, Variety } from '../models/index.js';
+import { models, sequelize } from '../config/database.js';
+const { Category, Variety } = models;
 
 const varietiesData = {
   "Flowers": [

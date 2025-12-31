@@ -1,5 +1,6 @@
 
-import { sequelize, Product, Category } from '../models/index.js';
+import { models, sequelize } from '../config/database.js';
+const { Product, Category } = models;
 
 (async () => {
   try {

@@ -1,6 +1,7 @@
 
 import 'dotenv/config';
-import { Product, Supplier, Ad, Category, sequelize } from './models/index.js';
+import { models, sequelize } from './config/database.js';
+const { Product, Supplier, Ad, Category } = models;
 
 async function seed() {
   try {

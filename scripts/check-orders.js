@@ -1,5 +1,5 @@
 
-import { sequelize } from '../models/index.js';
+import { sequelize } from '../config/database.js';
 (async () => {
   try {
     const [rows] = await sequelize.query("PRAGMA table_info('Orders')");

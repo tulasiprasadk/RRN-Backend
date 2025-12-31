@@ -1,4 +1,4 @@
-import { Notification } from "../models/index.js";
+import { Notification } from "../config/database.js";
 
 /**
  * Create a new notification for admin
