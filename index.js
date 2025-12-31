@@ -2,6 +2,9 @@ console.log("🔥 INDEX.JS VERSION 2025-12-30");
 
 import express from "express";
 import cors from "cors";
+import session from "express-session";
+
+import passport from "./passport.js";
 import routes from "./routes/index.js";
 import { initDatabase } from "./config/database.js";
 
@@ -19,7 +22,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Postman / curl
+      if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -37,12 +40,32 @@ app.use(
 app.use(express.json());
 
 /* =========================
+   SESSION + PASSPORT (CRITICAL)
+========================= */
+app.use(
+  session({
+    name: "rrnagar.sid",
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+/* =========================
    ROUTES
 ========================= */
 app.use("/api", routes);
 
 /* =========================
-   START SERVER (FIRST!)
+   START SERVER
 ========================= */
 const PORT = process.env.PORT || 8080;
 
