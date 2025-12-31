@@ -1,35 +1,54 @@
-
 import express from "express";
-import passport from "passport";
+import passport from "../passport.js"; // ✅ MUST use local passport
 import jwt from "jsonwebtoken";
-import customerRoutes from "./customer/index.js";
 
 const router = express.Router();
 
-// Google OAuth routes
-router.get('/auth/google',
-  passport.authenticate('customer-google', { scope: ['profile', 'email'] })
+/* ============================================================
+   GOOGLE OAUTH — CUSTOMER
+   GET /api/customers/auth/google
+============================================================ */
+router.get(
+  "/auth/google",
+  passport.authenticate("customer-google", {
+    scope: ["profile", "email"],
+  })
 );
 
+/* ============================================================
+   GOOGLE OAUTH CALLBACK — CUSTOMER
+   GET /api/customers/auth/google/callback
+============================================================ */
 router.get(
   "/auth/google/callback",
-  passport.authenticate("supplier-google", {
-    failureRedirect: "/supplier/login",
+  passport.authenticate("customer-google", {
+    failureRedirect: "/login",
     session: true,
   }),
   (req, res) => {
     const frontendUrl = process.env.FRONTEND_URL;
-
-    if (req.user && req.user.status === "approved") {
-      return res.redirect(`${frontendUrl}/supplier/dashboard`);
-    } else {
-      return res.redirect(`${frontendUrl}/supplier/login?pending=1`);
+    if (!frontendUrl) {
+      return res.status(500).send("FRONTEND_URL not configured");
     }
+
+    if (!req.user) {
+      return res.status(500).send("Customer not found after OAuth");
+    }
+
+    const token = jwt.sign(
+      {
+        id: req.user.id,
+        email: req.user.email,
+        role: "customer",
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    return res.redirect(
+      `${frontendUrl}/oauth-success?token=${token}&role=customer`
+    );
   }
 );
-
-
-// Mount all other customer routes
-router.use('/', customerRoutes);
 
 export default router;
