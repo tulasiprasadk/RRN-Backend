@@ -11,20 +11,23 @@ router.get('/auth/google',
   passport.authenticate('customer-google', { scope: ['profile', 'email'] })
 );
 
-router.get('/auth/google/callback',
-  passport.authenticate('customer-google', {
-    failureRedirect: '/login',
-    session: true
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("supplier-google", {
+    failureRedirect: "/supplier/login",
+    session: true,
   }),
   (req, res) => {
-    const token = jwt.sign(
-      { id: req.user.id, email: req.user.email, role: 'user' },
-      process.env.JWT_SECRET || 'dev-secret',
-      { expiresIn: '7d' }
-    );
-    res.redirect(`http://localhost:5173/oauth-success?token=${token}&role=user`);
+    const frontendUrl = process.env.FRONTEND_URL;
+
+    if (req.user && req.user.status === "approved") {
+      return res.redirect(`${frontendUrl}/supplier/dashboard`);
+    } else {
+      return res.redirect(`${frontendUrl}/supplier/login?pending=1`);
+    }
   }
 );
+
 
 // Mount all other customer routes
 router.use('/', customerRoutes);

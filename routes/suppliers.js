@@ -18,18 +18,27 @@ router.get('/auth/google',
 );
 
 // Google OAuth callback
-router.get('/auth/google/callback',
-  passport.authenticate('supplier-google', { failureRedirect: '/supplier/login', session: true }),
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("customer-google", {
+    failureRedirect: "/login",
+    session: true,
+  }),
   (req, res) => {
-    console.log('Google OAuth callback hit, user:', req.user);
-    // If supplier is approved, redirect to dashboard; else show pending message
-    if (req.user && req.user.status === 'approved') {
-      return res.redirect('http://localhost:5173/supplier/dashboard');
-    } else {
-      return res.redirect('http://localhost:5173/supplier/login?pending=1');
-    }
+    const frontendUrl = process.env.FRONTEND_URL;
+
+    const token = jwt.sign(
+      { id: req.user.id, email: req.user.email, role: "user" },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.redirect(
+      `${frontendUrl}/oauth-success?token=${token}&role=user`
+    );
   }
 );
+
 
 
 // Configure multer for KYC document uploads
