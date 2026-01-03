@@ -9,7 +9,8 @@ async function seed() {
     await sequelize.sync();
     
     // Clear existing data (delete in reverse dependency order)
-    await sequelize.query('DELETE FROM ProductSuppliers'); // Junction table first
+    // Quote table name for Postgres (Sequelize created mixed-case table names)
+    await sequelize.query('DELETE FROM "ProductSuppliers"'); // Junction table first
     await Product.destroy({ where: {} });
     await Supplier.destroy({ where: {} });
     await Ad.destroy({ where: {} });
@@ -33,6 +34,7 @@ async function seed() {
     // Create suppliers (for demonstration)
     const s1 = await Supplier.create({
       name: "FreshMart Groceries",
+      email: "freshmart@example.com",
       phone: "9876543210",
       address: "RR Nagar, Bengaluru",
       description: "Your trusted grocery store",
