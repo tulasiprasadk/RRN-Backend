@@ -3,6 +3,7 @@
 // Uses SMTP if configured; falls back to console logging in development
 
 import nodemailer from 'nodemailer';
+import fs from 'fs';
 
 const SMTP_HOST = process.env.SMTP_HOST;
 const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -46,7 +47,16 @@ export async function sendOTP(email, otp) {
   const subject = 'Your RR Nagar verification code';
   const message = `Your RR Nagar verification code is: ${otp}. Valid for 10 minutes. Do not share this code.`;
   try {
-    return await sendEmail(email, subject, message);
+    const ok = await sendEmail(email, subject, message);
+    // Dev convenience: write OTP to a local file so testers can read it when SMTP is not configured
+    try {
+      if (!transporter) {
+        fs.writeFileSync('./last_otp.txt', `${new Date().toISOString()}\t${email}\t${otp}\n`, { flag: 'a' });
+      }
+    } catch (e) {
+      console.error('Failed to write last_otp.txt', e?.message || e);
+    }
+    return ok;
   } catch (err) {
     console.error('Email send error:', err.message);
     return false;

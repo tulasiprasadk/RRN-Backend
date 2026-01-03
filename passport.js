@@ -30,11 +30,12 @@ passport.deserializeUser(async (obj, done) => {
   }
 });
 
-passport.use('supplier-google', new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_SUPPLIER_CALLBACK_URL || '/api/suppliers/auth/google/callback',
-}, async (accessToken, refreshToken, profile, done) => {
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+  passport.use('supplier-google', new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_SUPPLIER_CALLBACK_URL || '/api/suppliers/auth/google/callback',
+  }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails[0].value;
     let supplier = await Supplier.findOne({ where: { email } });
@@ -50,16 +51,14 @@ passport.use('supplier-google', new GoogleStrategy({
   } catch (err) {
     return done(err);
   }
-}));
+  }));
 
-export default passport;
-
-// Google OAuth for Customer (user)
-passport.use('customer-google', new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.GOOGLE_CUSTOMER_CALLBACK_URL || '/api/customers/auth/google/callback',
-}, async (accessToken, refreshToken, profile, done) => {
+  // Google OAuth for Customer (user)
+  passport.use('customer-google', new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CUSTOMER_CALLBACK_URL || '/api/customers/auth/google/callback',
+  }, async (accessToken, refreshToken, profile, done) => {
   try {
     const email = profile.emails[0].value;
     let customer = await Customer.findOne({ where: { email } });
@@ -74,4 +73,9 @@ passport.use('customer-google', new GoogleStrategy({
   } catch (err) {
     return done(err);
   }
-}));
+  }));
+} else {
+  console.warn('Google OAuth not configured: set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to enable.');
+}
+
+export default passport;

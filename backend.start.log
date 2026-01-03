@@ -1,0 +1,26 @@
+﻿node : node:url:175
+At line:1 char:33
++ Push-Location 'D:\RRN\backend'; node index.js 2>&1 | Out-File -FilePa ...
++                                 ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (node:url:175:String) [], RemoteExcepti 
+   on
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  validateString(url, 'url');
+  ^
+
+TypeError [ERR_INVALID_ARG_TYPE]: The "url" argument must be of type string. 
+Received undefined
+    at Url.parse (node:url:175:3)
+    at Object.urlParse [as parse] (node:url:146:13)
+    at new Sequelize (D:\RRN\backend\node_modules\sequelize\lib\sequelize.js:57:28)
+    at file:///D:/RRN/backend/config/database.js:7:19
+    at ModuleJob.run (node:internal/modules/esm/module_job:345:25)
+    at async onImport.tracePromise.__proto__ 
+(node:internal/modules/esm/loader:665:26)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5) 
+{
+  code: 'ERR_INVALID_ARG_TYPE'
+}
+
+Node.js v22.20.0

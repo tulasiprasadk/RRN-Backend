@@ -38,10 +38,10 @@ export default function initModels(sequelize) {
   });
 
   /* associations (same as you already wrote) */
-  Customer.hasMany(CartItem);
-  CartItem.belongsTo(Customer);
-  Product.hasMany(CartItem);
-  CartItem.belongsTo(Product);
+  Customer.hasMany(CartItem, { foreignKey: 'customerId' });
+  CartItem.belongsTo(Customer, { foreignKey: 'customerId' });
+  Product.hasMany(CartItem, { foreignKey: 'productId' });
+  CartItem.belongsTo(Product, { foreignKey: 'productId' });
 
   Product.belongsToMany(Supplier, { through: ProductSupplier, as: "suppliers" });
   Supplier.belongsToMany(Product, { through: ProductSupplier, as: "products" });
@@ -52,20 +52,20 @@ export default function initModels(sequelize) {
   Category.hasMany(Variety);
   Variety.belongsTo(Category);
 
-  Supplier.hasMany(Order);
-  Order.belongsTo(Supplier);
+  Supplier.hasMany(Order, { foreignKey: 'supplierId' });
+  Order.belongsTo(Supplier, { foreignKey: 'supplierId' });
 
-  Product.hasMany(Order);
-  Order.belongsTo(Product);
+  Product.hasMany(Order, { foreignKey: 'productId' });
+  Order.belongsTo(Product, { foreignKey: 'productId' });
 
   Product.hasMany(StockHistory);
   StockHistory.belongsTo(Product);
 
-  Customer.hasMany(Order);
-  Order.belongsTo(Customer);
+  Customer.hasMany(Order, { foreignKey: 'customerId' });
+  Order.belongsTo(Customer, { foreignKey: 'customerId' });
 
-  Address.hasMany(Order);
-  Order.belongsTo(Address);
+  Address.hasMany(Order, { foreignKey: 'addressId' });
+  Order.belongsTo(Address, { foreignKey: 'addressId' });
 
   Customer.hasMany(Address);
   Address.belongsTo(Customer);
