@@ -94,8 +94,13 @@ app.use(passport.session());
    - To avoid double `/api` we mount routes at `/` under Vercel,
      and at `/api` for normal servers.
 ========================= */
-const basePath = process.env.VERCEL ? "/" : "/api";
-app.use(basePath, routes);
+// Mount routes at both `/api` and `/` so the server works both when
+// running behind a server (where routes live under `/api`) and
+// when running as a Vercel serverless function (where forwarded paths
+// may or may not include `/api`). This avoids mismatches regardless
+// of how the platform forwards the request path.
+app.use('/api', routes);
+app.use('/', routes);
 
 // centralized error handler to ensure stacktraces reach logs
 app.use((err, req, res, next) => {
