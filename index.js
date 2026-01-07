@@ -89,8 +89,13 @@ app.use(passport.session());
 
 /* =========================
    ROUTES
+   - When running as a Vercel serverless function the incoming path
+     forwarded to the handler is already the part after `/api`.
+   - To avoid double `/api` we mount routes at `/` under Vercel,
+     and at `/api` for normal servers.
 ========================= */
-app.use("/api", routes);
+const basePath = process.env.VERCEL ? "/" : "/api";
+app.use(basePath, routes);
 
 // centralized error handler to ensure stacktraces reach logs
 app.use((err, req, res, next) => {
