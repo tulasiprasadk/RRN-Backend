@@ -1,26 +1,16 @@
 import express from 'express';
-import pkg from 'pg';
-const { Pool } = pkg;
+import { models } from '../config/database.js';
 
 const router = express.Router();
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
 
 // GET /api/categories
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query(
-      `
-      SELECT id, name, icon
-      FROM "Categories"
-      ORDER BY id ASC
-      `
-    );
-
-    res.json(result.rows);
+    const { Category } = models;
+    const cats = await Category.findAll({ attributes: ['id', 'name', 'icon'], order: [['id', 'ASC']] });
+    res.json(cats.map(c => c.toJSON()));
   } catch (err) {
-    console.error('Categories API error:', err.message);
+    console.error('Categories API error:', err && err.stack ? err.stack : err);
     res.status(500).json({ error: 'Failed to load categories' });
   }
 });

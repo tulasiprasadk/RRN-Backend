@@ -5,6 +5,7 @@ import { models } from "../config/database.js";
 const { Category, Ad, AnalyticsVisit, Product, Admin, Supplier, Order, Customer } = models;
 
 import { translateToKannada } from '../services/translator.js';
+import adminNotify from '../services/adminNotify.js';
 const router = express.Router();
 
 /* ======================================================
@@ -31,6 +32,26 @@ async function requireSuperAdmin(req, res, next) {
   }
 }
 
+// Middleware to require any logged-in admin (not necessarily super)
+async function requireAdmin(req, res, next) {
+  try {
+    if (!req.session || !req.session.adminId) {
+      return res.status(401).json({ error: 'Not logged in' });
+    }
+
+    const admin = await Admin.findByPk(req.session.adminId);
+    if (!admin) {
+      return res.status(403).json({ error: 'Admin not found' });
+    }
+
+    req.currentAdmin = admin;
+    next();
+  } catch (err) {
+    console.error('Admin check error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
 /* ======================================================
    AUTH
 ====================================================== */
@@ -43,7 +64,11 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password required' });
     }
 
+    console.log('[debug] Admin login attempt for:', email);
+
     const admin = await Admin.findOne({ where: { email } });
+    console.log('[debug] Admin record found:', !!admin);
+    if (admin) console.log('[debug] admin.password exists:', !!admin.password, 'type:', typeof admin.password);
     if (!admin) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -52,7 +77,13 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ message: 'Account is deactivated' });
     }
 
-    const valid = await bcrypt.compare(password, admin.password);
+    let valid;
+    try {
+      valid = await bcrypt.compare(password, admin.password);
+    } catch (bcryptErr) {
+      console.error('bcrypt compare error:', bcryptErr);
+      return res.status(500).json({ message: 'Server error' });
+    }
     if (!valid) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -87,6 +118,29 @@ router.get('/me', (req, res) => {
     loggedIn: !!req.session.adminId,
     adminId: req.session.adminId || null
   });
+});
+
+// Change password for logged-in admin
+router.post('/change-password', requireAdmin, async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ error: 'Old and new passwords required' });
+    }
+
+    const admin = req.currentAdmin;
+    const valid = await bcrypt.compare(oldPassword, admin.password);
+    if (!valid) {
+      return res.status(401).json({ error: 'Old password is incorrect' });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+    await admin.update({ password: hash });
+    res.json({ success: true, message: 'Password updated' });
+  } catch (err) {
+    console.error('Change password error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 /* ======================================================
@@ -178,6 +232,57 @@ router.post('/ads', async (req, res) => {
 router.get('/analytics/visits', async (req, res) => {
   const visits = await AnalyticsVisit.count();
   res.json({ visits });
+});
+
+/* ======================================================
+   SUPPLIERS — Pending list + Approve/Reject
+====================================================== */
+router.get('/suppliers/pending', requireSuperAdmin, async (req, res) => {
+  try {
+    const pending = await Supplier.findAll({ where: { status: 'pending' } });
+    res.json(pending);
+  } catch (err) {
+    console.error('Pending suppliers error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/suppliers/:id/approve', requireSuperAdmin, async (req, res) => {
+  try {
+    const supplier = await Supplier.findByPk(req.params.id);
+    if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
+
+    if (supplier.status === 'approved') {
+      return res.json({ success: true, message: 'Supplier already approved' });
+    }
+
+    await supplier.update({ status: 'approved', approvedBy: req.currentAdmin.id, approvedAt: new Date() });
+
+    // Notify admin or supplier if required
+    try {
+      if (typeof adminNotify === 'function') adminNotify(`Supplier approved: ${supplier.name} (${supplier.email})`);
+    } catch (e) {
+      // ignore notification errors
+    }
+
+    res.json({ success: true, message: 'Supplier approved' });
+  } catch (err) {
+    console.error('Approve supplier error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.post('/suppliers/:id/reject', requireSuperAdmin, async (req, res) => {
+  try {
+    const supplier = await Supplier.findByPk(req.params.id);
+    if (!supplier) return res.status(404).json({ error: 'Supplier not found' });
+
+    await supplier.update({ status: 'rejected', rejectionReason: req.body.reason || null });
+    res.json({ success: true, message: 'Supplier rejected' });
+  } catch (err) {
+    console.error('Reject supplier error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 /* ======================================================

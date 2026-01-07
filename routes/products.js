@@ -43,6 +43,24 @@ router.get("/", async (req, res) => {
       order: [["id", "DESC"]],
     });
 
+    // Debugging: if ?debug=true is passed, include DB counts and connection info
+    if (req.query && req.query.debug) {
+      console.log('[debug] /api/products debug param:', req.query.debug);
+    }
+    if (req.query.debug === 'true') {
+      try {
+        const totalCount = await Product.count();
+        const filteredCount = await Product.count({ where });
+        const dbInfo = process.env.DATABASE_URL
+          ? process.env.DATABASE_URL.replace(/:\/\/(.*@)/, '://****@')
+          : (process.env.DB_STORAGE || './database.sqlite');
+        return res.json({ debug: { totalCount, filteredCount, dbInfo }, products: products.map(p => p.toJSON()) });
+      } catch (dbgErr) {
+        console.error('Error computing debug counts:', dbgErr);
+        // fall through to normal response
+      }
+    }
+
     // Add basePrice property for frontend compatibility
     const productsWithBasePrice = products.map((p) => {
       const obj = p.toJSON();
@@ -142,8 +160,9 @@ router.post("/bulk", async (req, res) => {
       errorDetails,
     });
   } catch (err) {
-    console.error("Bulk upload error:", err);
-    res.status(500).json({ error: "Bulk upload failed" });
+    console.error("Bulk upload error:", err && err.stack ? err.stack : err);
+    // include error message in response for local debugging (safe in dev only)
+    res.status(500).json({ error: "Bulk upload failed", detail: err && err.stack ? err.stack : String(err) });
   }
 });
 

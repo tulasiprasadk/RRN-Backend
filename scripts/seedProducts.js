@@ -1,9 +1,11 @@
 
-import { Product, Supplier, Category, sequelize } from "../config/database.js";
+import { models, sequelize } from "../config/database.js";
+const { Product, Category } = models;
 
 async function seed() {
 
-  await sequelize.sync({ alter: true });
+  // Ensure DB connection is alive; avoid running alter migrations during seeding
+  await sequelize.authenticate();
 
   const categories = await Category.findAll();
   if (!categories.length) {

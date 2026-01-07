@@ -1,6 +1,8 @@
 // scripts/seedCategories.js
 
-import { Category, sequelize } from "../config/database.js";
+import { models, sequelize } from "../config/database.js";
+
+const { Category } = models;
 
 async function seedCategories() {
   const categories = [

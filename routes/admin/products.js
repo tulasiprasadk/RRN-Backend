@@ -4,6 +4,13 @@ import { models } from '../../config/database.js';
 const { Product, Supplier, ProductSupplier } = models;
 const router = express.Router();
 
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+import { parse } from 'csv-parse/sync';
+
+const upload = multer({ dest: path.join(process.cwd(), 'tmp') });
+
 // Get suppliers for a product
 router.get('/:productId/suppliers', async (req, res) => {
   try {
@@ -86,3 +93,55 @@ router.delete('/:productId/suppliers/:supplierId', async (req, res) => {
 });
 
 export default router;
+
+// CSV import endpoint for groceries
+router.post('/import-groceries', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'file required' });
+
+    const content = fs.readFileSync(req.file.path, 'utf8');
+    const rows = parse(content, { columns: true, skip_empty_lines: true, trim: true });
+
+    if (!rows.length) return res.status(400).json({ error: 'no rows found in CSV' });
+
+    // find or create Groceries category (case-insensitive). Prefer lowest id if duplicates exist.
+    const { Category } = models;
+    const { fn, col } = require('sequelize');
+    let groceries = await Category.findOne({ where: where(fn('lower', col('name')), 'groceries'), order: [['id','ASC']] });
+    if (!groceries) {
+      // create if missing
+      try {
+        groceries = await Category.create({ name: 'Groceries', icon: '🛒' });
+      } catch (e) {
+        groceries = await Category.findOne({ where: where(fn('lower', col('name')), 'groceries'), order: [['id','ASC']] });
+      }
+    }
+    if (!groceries) return res.status(400).json({ error: 'Groceries category not found or could not be created.' });
+
+    // prepare products
+    const toInsert = rows.map(r => ({
+      title: (r.title || r['title'] || '').toString().trim(),
+      variety: (r.variety || r['variety'] || '').toString().trim(),
+      subVariety: r.subVariety || r['subVariety'] || null,
+      price: Number(r.price || r['price']) || 0,
+      unit: r.unit || r['unit'] || null,
+      description: r.description || r['description'] || null,
+      CategoryId: groceries.id,
+      status: 'approved',
+      isService: false,
+      deliveryAvailable: true
+    })).filter(p => p.title);
+
+    // delete old groceries and insert
+    await Product.destroy({ where: { CategoryId: groceries.id } });
+    const created = await Product.bulkCreate(toInsert);
+
+    // cleanup
+    try { fs.unlinkSync(req.file.path); } catch (e) { /* ignore */ }
+
+    res.json({ ok: true, inserted: created.length });
+  } catch (err) {
+    console.error('Import groceries error:', err);
+    res.status(500).json({ error: err && err.stack ? err.stack : String(err) });
+  }
+});

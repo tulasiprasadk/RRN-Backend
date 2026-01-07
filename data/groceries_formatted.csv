@@ -1,0 +1,76 @@
+title,variety,subVariety,price,unit,description,categoryId,categoryName
+Banana,Fruits,,150,kg,,6,Groceries
+Banana - Raw,Fruits,,120,kg,,6,Groceries
+Apple,Fruits,,90,kg,,6,Groceries
+Mango,Fruits,,0,kg,,6,Groceries
+Orange,Fruits,,0,kg,,6,Groceries
+Mosambi,Fruits,,0,kg,,6,Groceries
+Sweet Lime,Fruits,,0,kg,,6,Groceries
+Grapes,Fruits,,0,kg,,6,Groceries
+Papaya,Fruits,,0,kg,,6,Groceries
+Pineapple,Fruits,,0,kg,,6,Groceries
+Watermelon,Fruits,,0,kg,,6,Groceries
+Muskmelon,Fruits,,0,kg,,6,Groceries
+Guava,Fruits,,0,kg,,6,Groceries
+Custard Apple,Fruits,,0,kg,,6,Groceries
+Kiwi,Fruits,,0,kg,,6,Groceries
+Strawberry,Fruits,,0,kg,,6,Groceries
+Blueberry,Fruits,,0,kg,,6,Groceries
+Pear,Fruits,,0,kg,,6,Groceries
+Plum,Fruits,,0,kg,,6,Groceries
+Peach,Fruits,,0,kg,,6,Groceries
+Tomato,Vegetables,,0,kg,,6,Groceries
+Onion,Vegetables,,0,kg,,6,Groceries
+Potato,Vegetables,,0,kg,,6,Groceries
+Carrot,Vegetables,,0,kg,,6,Groceries
+Beans,Vegetables,,0,kg,,6,Groceries
+Brinjal,Vegetables,,0,kg,,6,Groceries
+Cabbage,Vegetables,,0,kg,,6,Groceries
+Cauliflower,Vegetables,,0,kg,,6,Groceries
+Radish,Vegetables,,0,kg,,6,Groceries
+Ridge Gourd,Vegetables,,0,kg,,6,Groceries
+Bottle Gourd,Vegetables,,0,kg,,6,Groceries
+Snake Gourd,Vegetables,,0,kg,,6,Groceries
+Ash Gourd,Vegetables,,0,kg,,6,Groceries
+Pumpkin,Vegetables,,0,kg,,6,Groceries
+Drumstick,Vegetables,,0,kg,,6,Groceries
+Green Pea,Vegetables,,0,kg,,6,Groceries
+Methi,Leafy Vegetables,,0,bunch,,6,Groceries
+Spinach,Leafy Vegetables,,0,bunch,,6,Groceries
+Palak,Leafy Vegetables,,0,bunch,,6,Groceries
+Coriander,Leafy Vegetables,,0,bunch,,6,Groceries
+Mint,Leafy Vegetables,,0,bunch,,6,Groceries
+Curry Leaves,Leafy Vegetables,,0,bunch,,6,Groceries
+Amaranth,Leafy Vegetables,,0,bunch,,6,Groceries
+Milk (Toned),Milk Products,,0,litre,,6,Groceries
+Milk (Full Cream),Milk Products,,0,litre,,6,Groceries
+Curd,Milk Products,,0,litre,,6,Groceries
+Paneer,Milk Products,,0,kg,,6,Groceries
+Ghee,Milk Products,,0,kg,,6,Groceries
+Butter,Milk Products,,0,kg,,6,Groceries
+Bread,Bakery,,0,packet,,6,Groceries
+Bun,Bakery,,0,packet,,6,Groceries
+Cookies,Bakery,,0,packet,,6,Groceries
+Rusk,Bakery,,0,packet,,6,Groceries
+Maida,Staples,,0,kg,,6,Groceries
+Rice (Idli),Staples,,0,kg,,6,Groceries
+Rice (Basmati),Staples,,0,kg,,6,Groceries
+Wheat Flour (Atta),Staples,,0,kg,,6,Groceries
+Sugar,Staples,,0,kg,,6,Groceries
+Salt,Staples,,0,kg,,6,Groceries
+Cooking Oil,Staples,,0,litre,,6,Groceries
+Groundnut,Staples,,0,kg,,6,Groceries
+Coconut,Staples,,0,kg,,6,Groceries
+Mustard Oil,Staples,,0,litre,,6,Groceries
+Tea Powder,Staples,,0,kg,,6,Groceries
+Coffee Powder,Staples,,0,kg,,6,Groceries
+Poha,Staples,,0,kg,,6,Groceries
+Vermicelli,Staples,,0,kg,,6,Groceries
+Noodles,Staples,,0,packet,,6,Groceries
+Pasta,Staples,,0,packet,,6,Groceries
+Pickle,Staples,,0,packet,,6,Groceries
+Spices (Mixed),Staples,,0,packet,,6,Groceries
+Eggs,Eggs,,0,pack,6 eggs,6,Groceries
+Chicken,Meat,,0,kg,,6,Groceries
+Fish,Meat,,0,kg,,6,Groceries
+

@@ -3,8 +3,40 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { Order, Product, Supplier, Address, Notification } from "../config/database.js";
+import { models } from "../config/database.js";
+import { Op } from "sequelize";
+const { Order, Product, Supplier, Address, Notification, Customer } = models;
 const router = express.Router();
+
+// Helper: flexible product lookup (accept numeric PK, sku, _id or other unique keys)
+async function findProductByAny(ref, opts = {}) {
+  if (ref == null) return null;
+  // try numeric primary key first
+  if (!isNaN(Number(ref))) {
+    const byPk = await Product.findByPk(Number(ref), opts);
+    if (byPk) return byPk;
+  }
+
+  // fallback to common alternative identifiers
+  const where = { [Op.or]: [{ sku: ref }, { _id: ref }, { id: ref }] };
+
+  try {
+    const found = await Product.findOne({ where, ...opts });
+    if (found) return found;
+  } catch (e) {
+    // some dialects/Sequelize versions may not like mixed where; try individual fallbacks
+    try {
+      let f = await Product.findOne({ where: { sku: ref }, ...opts });
+      if (f) return f;
+    } catch (e2) {}
+    try {
+      let f = await Product.findOne({ where: { _id: ref }, ...opts });
+      if (f) return f;
+    } catch (e3) {}
+  }
+
+  return null;
+}
 
 // Configure multer for payment screenshots
 const storage = multer.diskStorage({
@@ -40,8 +72,8 @@ router.post("/create", requireLogin, async (req, res) => {
       paymentScreenshot
     } = req.body;
 
-    // Validate product
-    const product = await Product.findByPk(productId, {
+    // Validate product (flexible lookup)
+    const product = await findProductByAny(productId, {
       include: [{
         model: Supplier,
         as: 'suppliers',
@@ -141,6 +173,62 @@ router.post("/create", requireLogin, async (req, res) => {
   } catch (err) {
     console.error("ORDER CREATION ERROR:", err);
     res.status(500).json({ error: "Failed to create order" });
+  }
+});
+
+// CREATE ORDER FOR GUESTS (no login required)
+router.post("/create-guest", async (req, res) => {
+  try {
+    const {
+      productId,
+      qty,
+      customerName,
+      customerPhone,
+      customerAddress
+    } = req.body;
+
+    const product = await findProductByAny(productId);
+    if (!product) return res.status(404).json({ error: "Product not found" });
+
+    // Create an Address record without CustomerId (guest)
+    const addressRecord = await Address.create({
+      name: customerName || 'Guest',
+      phone: customerPhone || null,
+      addressLine: customerAddress || null,
+      isDefault: false
+    });
+
+    const totalAmount = Number(product.price) * Number(qty);
+
+    const order = await Order.create({
+      CustomerId: null,
+      productId,
+      qty,
+      supplierId: product.supplierId || null,
+      customerName: customerName || null,
+      customerPhone: customerPhone || null,
+      customerAddress: customerAddress || null,
+      addressId: addressRecord.id,
+      paymentStatus: "pending",
+      totalAmount,
+      status: "created"
+    });
+
+    try {
+      await Notification.create({
+        type: "order_created",
+        title: "New Guest Order Received",
+        message: `Order #${order.id} from ${customerName || 'Guest'} (${customerPhone || 'N/A'}) - ₹${totalAmount}`,
+        isRead: false
+      });
+    } catch (notifErr) {
+      console.error("Notification creation failed for guest order:", notifErr);
+    }
+
+    res.json({ success: true, orderId: order.id, message: "Guest order created" });
+  } catch (err) {
+    console.error("GUEST ORDER CREATION ERROR:", err);
+    res.status(500).json({ error: "Failed to create guest order" });
   }
 });
 router.put("/:id/unr", requireLogin, async (req, res) => {
@@ -280,6 +368,83 @@ router.post("/submit-payment", upload.single("paymentScreenshot"), async (req, r
   } catch (err) {
     console.log(err);
     res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// SUBMIT PAYMENT FOR GUEST ORDER (no login required)
+router.post("/submit-payment-guest", upload.single("paymentScreenshot"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ msg: "Screenshot missing" });
+
+    if (!req.body.unr || req.body.unr.length < 6)
+      return res.status(400).json({ msg: "Invalid UNR" });
+
+    const orderId = req.body.orderId;
+    if (!orderId) return res.status(400).json({ msg: "Missing orderId" });
+
+    const screenshotPath = `/uploads/payment/${req.file.filename}`;
+
+    const order = await Order.findOne({ where: { id: orderId } });
+    if (!order) return res.status(404).json({ msg: "Order not found" });
+
+    order.paymentStatus = "pending";
+    order.paymentUNR = req.body.unr;
+    order.paymentScreenshot = screenshotPath;
+    await order.save();
+
+    try {
+      await Notification.create({
+        type: "payment_submitted",
+        title: "Payment Submitted (Guest)",
+        message: `Order #${order.id} payment submitted. UNR: ${order.paymentUNR}. Approve in Admin → Payments.`,
+        isRead: false
+      });
+    } catch (notifErr) {
+      console.error("Payment notification creation failed (guest):", notifErr);
+    }
+
+    res.json({ msg: "Payment submitted" });
+  } catch (err) {
+    console.error("GUEST PAYMENT SUBMIT ERROR:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+});
+
+// CONVERT GUEST ORDER TO CUSTOMER ACCOUNT
+router.post("/convert-guest", async (req, res) => {
+  try {
+    const { orderId, email, name } = req.body;
+    if (!orderId || !email) return res.status(400).json({ error: "orderId and email required" });
+
+    const order = await Order.findByPk(orderId);
+    if (!order) return res.status(404).json({ error: "Order not found" });
+    if (order.CustomerId) return res.status(400).json({ error: "Order already attached to a customer" });
+
+    // Check email uniqueness
+    const existing = await Customer.findOne({ where: { email } });
+    if (existing) return res.status(400).json({ error: "Email already in use" });
+
+    // Create customer (no password - system uses OTP/OAuth)
+    const customer = await Customer.create({
+      email,
+      username: email,
+      name: name || order.customerName || 'Customer',
+      mobile: order.customerPhone || null
+    });
+
+    // Attach address and order to the new customer
+    if (order.addressId) {
+      await Address.update({ CustomerId: customer.id }, { where: { id: order.addressId } });
+    }
+    await Order.update({ CustomerId: customer.id }, { where: { id: order.id } });
+
+    // Auto-login the newly created customer (session)
+    req.session.customerId = customer.id;
+
+    res.json({ success: true, customerId: customer.id, message: 'Account created and order attached' });
+  } catch (err) {
+    console.error('CONVERT GUEST ERROR:', err);
+    res.status(500).json({ error: 'Failed to convert guest to customer' });
   }
 });
 

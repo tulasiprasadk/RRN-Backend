@@ -1,0 +1,16 @@
+title,variety,subVariety,price,unit,description,categoryId,categoryName
+Rose (red),UNBOUND,,150,piece,Fresh red roses, ,Flowers
+Sevanthige,UNBOUND,,150,piece,Sevanthige flowers, ,Flowers
+Mallige,UNBOUND,,150,piece,Mallige (jasmine), ,Flowers
+Sujee malli,UNBOUND,,150,piece,Sujee malli fragrant, ,Flowers
+Kanakamb,UNBOUND,,150,piece,Kanakamb flowers, ,Flowers
+Kakada,UNBOUND,,150,piece,Kakada flowers, ,Flowers
+Ganere,UNBOUND,,150,piece,Ganere garland flowers, ,Flowers
+Rose (pink),UNBOUND,,150,piece,Fresh pink roses, ,Flowers
+Rose (Yellow),UNBOUND,,150,piece,Yellow roses, ,Flowers
+Tulasi,UNBOUND,,150,piece,Tulasi leaves/flowers, ,Flowers
+Belva,UNBOUND,,150,piece,Belva flowers, ,Flowers
+Garike,UNBOUND,,150,piece,Garike flowers, ,Flowers
+Lotus,UNBOUND,,150,piece,Lotus flowers, ,Flowers
+NORMAL GARLAND,GARLAND,,150,piece,Normal garland, ,Flowers
+BIG GARLAND,GARLAND,,150,piece,Large garland, ,Flowers

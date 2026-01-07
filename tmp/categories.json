@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Flowers",
+    "icon": "🌸"
+  },
+  {
+    "id": 2,
+    "name": "Crackers",
+    "icon": "🎆"
+  },
+  {
+    "id": 3,
+    "name": "Vegetables",
+    "icon": "🥬"
+  },
+  {
+    "id": 4,
+    "name": "Fruits",
+    "icon": "🍎"
+  },
+  {
+    "id": 5,
+    "name": "Milk Products",
+    "icon": "🥛"
+  },
+  {
+    "id": 6,
+    "name": "Groceries",
+    "icon": "🛒"
+  },
+  {
+    "id": 7,
+    "name": "Local Services",
+    "icon": "🛠️"
+  },
+  {
+    "id": 8,
+    "name": "Pet Services",
+    "icon": "🐾"
+  },
+  {
+    "id": 9,
+    "name": "Consultancy",
+    "icon": "📑"
+  }
+]
