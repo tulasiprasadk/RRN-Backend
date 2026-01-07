@@ -15,6 +15,7 @@ const app = express();
 ========================= */
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:3000",
   "https://rrw-frontend.vercel.app",
   "https://rrw-frontend-bshkgchh2-prasads-projects-1f1a36aa.vercel.app",
 ];
@@ -37,15 +38,42 @@ app.use(
 /* =========================
    MIDDLEWARE
 ========================= */
-app.use(express.json());
+// Capture raw request body for better JSON parse error diagnostics
+app.use(express.json({
+  verify: (req, _res, buf, encoding) => {
+    try {
+      req.rawBody = buf.toString(encoding || 'utf8');
+    } catch (e) {
+      req.rawBody = undefined;
+    }
+  }
+}));
+
+// simple request logger in development to help reproduce issues
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, _res, next) => {
+    console.log(`[req] ${new Date().toISOString()} ${req.method} ${req.originalUrl}`);
+    next();
+  });
+}
 
 /* =========================
    SESSION + PASSPORT (CRITICAL)
 ========================= */
+// SESSION SECRET: require in production, provide a safe dev fallback locally
+const sessionSecret = process.env.SESSION_SECRET || (process.env.NODE_ENV !== 'production' ? 'dev-secret-change-me' : undefined);
+if (!sessionSecret) {
+  console.error('FATAL: SESSION_SECRET is not set. Set SESSION_SECRET in environment for production.');
+  process.exit(1);
+}
+if (sessionSecret === 'dev-secret-change-me') {
+  console.warn('Warning: using default development SESSION_SECRET. Set SESSION_SECRET for real deployments.');
+}
+
 app.use(
   session({
     name: "rrnagar.sid",
-    secret: process.env.SESSION_SECRET,
+    secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
     cookie: {
@@ -64,14 +92,46 @@ app.use(passport.session());
 ========================= */
 app.use("/api", routes);
 
-/* =========================
-   START SERVER
-========================= */
-const PORT = process.env.PORT || 8080;
+// centralized error handler to ensure stacktraces reach logs
+app.use((err, req, res, next) => {
+  try {
+    console.error("[error]", new Date().toISOString(), req.method, req.originalUrl);
+    console.error(err && err.stack ? err.stack : err);
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend listening on port ${PORT}`);
+    // If JSON parsing failed, log the raw body to help debugging
+    if (err instanceof SyntaxError && req && req.rawBody !== undefined) {
+      console.error('[error] Raw request body:', req.rawBody);
+    }
+  } catch (logErr) {
+    // ignore logging errors
+  }
+
+  if (res.headersSent) return next(err);
+  res.status(500).json({ success: false, message: "Internal Server Error" });
 });
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err && err.stack ? err.stack : err);
+  // don't exit in dev — allow inspector to collect state; in prod you may want to exit
+});
+
+
+/* =========================
+   START SERVER (skip when running as Vercel serverless)
+========================= */
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`🚀 Backend listening on port ${PORT}`);
+  });
+}
+
+/* Export the app for serverless wrappers */
+export default app;
 
 /* =========================
    INIT DATABASE (NON-BLOCKING)
