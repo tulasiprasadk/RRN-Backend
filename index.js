@@ -1,5 +1,9 @@
 console.log("🔥 INDEX.JS VERSION 2025-12-30");
 
+// Load local `.env` during development so running `npm run dev` picks up
+// environment variables without extra bootstrapping.
+import 'dotenv/config';
+
 import express from "express";
 import cors from "cors";
 import session from "express-session";
