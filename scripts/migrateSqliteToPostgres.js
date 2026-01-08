@@ -31,6 +31,22 @@ async function main() {
     await dest.authenticate();
     console.log('Connected to both databases.');
 
+    // Ensure Postgres sequences are synced to avoid duplicate-key on inserts
+    try {
+      await dest.query(`SELECT setval(pg_get_serial_sequence('"Categories"','id'), COALESCE((SELECT MAX(id) FROM "Categories"), 1));`);
+      await dest.query(`SELECT setval(pg_get_serial_sequence('"Products"','id'), COALESCE((SELECT MAX(id) FROM "Products"), 1));`);
+      console.log('Postgres sequences synced for Categories and Products');
+    } catch (seqErr) {
+      console.warn('Failed to sync sequences:', seqErr && seqErr.message ? seqErr.message : seqErr);
+    }
+    // Log check constraints on Products to help diagnose constraint violations during inserts
+    try {
+      const [cons] = await dest.query(`SELECT conname, pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conrelid = '"Products"'::regclass AND contype = 'c';`);
+      console.log('Products table check constraints:', cons.map(c => ({ name: c.conname, def: c.def })));
+    } catch (cErr) {
+      console.warn('Could not retrieve Products constraints:', cErr && cErr.message ? cErr.message : cErr);
+    }
+
     // Load source categories
     const srcCats = await srcModels.Category.findAll();
     console.log(`Source categories: ${srcCats.length}`);
@@ -48,8 +64,30 @@ async function main() {
       });
 
       if (!destCat) {
-        destCat = await destModels.Category.create({ name: c.name, icon: c.icon || null });
-        console.log(`Created category '${c.name}' -> id=${destCat.id}`);
+        try {
+          destCat = await destModels.Category.create({ name: c.name, icon: c.icon || null });
+          console.log(`Created category '${c.name}' -> id=${destCat.id}`);
+        } catch (err) {
+          // Handle duplicate-key race/sequence issues by attempting to locate the existing row
+          const code = err && (err.parent && err.parent.code || err.original && err.original.code);
+          console.error('Category.create failed:', err && err.message ? err.message : err)
+          if (code === '23505') {
+            console.warn(`Duplicate key detected when creating category '${c.name}'. Attempting to reuse existing row.`);
+            destCat = await destModels.Category.findOne({ where: Sequelize.where(Sequelize.fn('lower', Sequelize.col('name')), (c.name || '').toLowerCase()) });
+            if (destCat) {
+              console.log(`Reusing category after duplicate key: '${c.name}' -> id=${destCat.id}`);
+            } else {
+              console.error('Duplicate key but could not find existing category by name; rethrowing.');
+              throw err;
+            }
+          } else {
+            console.error('Error keys:', Object.getOwnPropertyNames(err))
+            if (err.parent) console.error('parent:', err.parent)
+            if (err.original) console.error('original:', err.original)
+            if (err.sql) console.error('sql:', err.sql)
+            throw err
+          }
+        }
       } else {
         console.log(`Reusing category '${c.name}' -> id=${destCat.id}`);
       }
@@ -91,25 +129,47 @@ async function main() {
       }
 
       // Create product in destination
-      await destModels.Product.create({
-        title: obj.title,
-        titleKannada: obj.titleKannada || null,
-        description: obj.description || null,
-        descriptionKannada: obj.descriptionKannada || null,
-        price: obj.price || 0,
-        variety: obj.variety || null,
-        subVariety: obj.subVariety || null,
-        unit: obj.unit || null,
-        supplierId: obj.supplierId || null,
-        isService: obj.isService === undefined ? false : obj.isService,
-        deliveryAvailable: obj.deliveryAvailable === undefined ? true : obj.deliveryAvailable,
-        isTemplate: obj.isTemplate === undefined ? false : obj.isTemplate,
-        metadata: obj.metadata || null,
-        status: obj.status || 'approved',
-        CategoryId: destCategoryId,
-      });
+      try {
+        // Normalize status to satisfy destination check constraint
+        let statusVal = (obj.status || 'pending').toString().toLowerCase();
+        const statusMap = { approved: 'active', active: 'active', pending: 'pending', inactive: 'inactive' };
+        const normalizedStatus = statusMap[statusVal] || 'pending';
 
-      created++;
+        await destModels.Product.create({
+          title: obj.title,
+          titleKannada: obj.titleKannada || null,
+          description: obj.description || null,
+          descriptionKannada: obj.descriptionKannada || null,
+          price: obj.price || 0,
+          variety: obj.variety || null,
+          subVariety: obj.subVariety || null,
+          unit: obj.unit || null,
+          supplierId: obj.supplierId || null,
+          isService: obj.isService === undefined ? false : obj.isService,
+          deliveryAvailable: obj.deliveryAvailable === undefined ? true : obj.deliveryAvailable,
+          isTemplate: obj.isTemplate === undefined ? false : obj.isTemplate,
+          metadata: obj.metadata || null,
+          status: normalizedStatus,
+          CategoryId: destCategoryId,
+        });
+        created++;
+      } catch (err) {
+        console.error(`Product.create failed for title='${obj.title}' CategoryId=${destCategoryId}:`, err && err.message ? err.message : err);
+        if (err && (err.parent || err.original)) {
+          console.error('Error details:', err.parent || err.original);
+        }
+        // If duplicate key, attempt to find existing product and skip
+        const code = err && (err.parent && err.parent.code || err.original && err.original.code);
+        if (code === '23505') {
+          console.warn(`Duplicate product detected for title='${obj.title}'. Attempting to find existing row and skip.`);
+          const existing = await destModels.Product.findOne({ where: { title: obj.title, CategoryId: destCategoryId } });
+          if (existing) {
+            skipped++;
+            continue;
+          }
+        }
+        throw err;
+      }
     }
 
     console.log(`Migration complete. created=${created} skipped=${skipped}`);
